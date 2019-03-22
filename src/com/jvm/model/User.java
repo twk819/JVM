@@ -1,4 +1,4 @@
-package jvm.model;
+package com.jvm.model;
 
 public class User {
     protected int id;
@@ -13,6 +13,12 @@ public class User {
  
     public User(int id) {
         this.id = id;
+    }
+
+    public User(int id, String phone, String email) {
+        this.id = id;
+        this.phone = phone;
+        this.email = email;
     }
      
     public User(int id, String username, String password, int role, int departmentID, String departmentName,String phone, String email, String lastLogin) {

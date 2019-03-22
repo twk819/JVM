@@ -1,4 +1,4 @@
-package jvm.controller;
+package com.jvm.controller;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import jvm.model.User;
+import com.jvm.model.User;
 
 import java.text.SimpleDateFormat;  
 import java.util.Date;  
@@ -134,6 +134,19 @@ public class UserDAO {
         PreparedStatement statement = jdbcConnection.prepareStatement(sql);
         statement.setString(1, user.getPhone());
         statement.setInt(2, user.getID());
+         
+        boolean rowUpdated = statement.executeUpdate() > 0;
+        statement.close();
+        disconnect();
+        return rowUpdated;   
+    }
+
+    public boolean deleteUser(User user) throws Exception {
+        String sql = "DELETE FROM TB_USER WHERE ID = ?";
+        connect();
+         
+        PreparedStatement statement = jdbcConnection.prepareStatement(sql);
+        statement.setInt(1, user.getID());
          
         boolean rowUpdated = statement.executeUpdate() > 0;
         statement.close();
