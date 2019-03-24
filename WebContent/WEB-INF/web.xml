@@ -7,12 +7,12 @@
     <display-name>App</display-name>
  
     <welcome-file-list>
-        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>login.jsp</welcome-file>
 	</welcome-file-list>
 
     <context-param>
         <param-name>jdbcURL</param-name>
-        <param-value>jdbc:mysql://localhost:3306/app</param-value>
+        <param-value>jdbc:mysql://localhost:3306/schema</param-value>
     </context-param>
  
     <context-param>
@@ -22,16 +22,16 @@
  
     <context-param>
         <param-name>jdbcPassword</param-name>
-        <param-value>passw0rd</param-value>
+        <param-value></param-value>
     </context-param>
  
     <servlet>
-        <servlet-name>ControllerServlet</servlet-name>
-        <servlet-class>com.jvm.controller.ControllerServlet</servlet-class>
+        <servlet-name>ServletController</servlet-name>
+        <servlet-class>com.jvm.controller.ServletController</servlet-class>
     </servlet>
  
     <servlet-mapping>
-        <servlet-name>ControllerServlet</servlet-name>
+        <servlet-name>ServletController</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
  

@@ -33,11 +33,11 @@ public class User {
         this.lastLogin = lastLogin;
     }
  
-    public int getID() {
+    public int getId() {
         return id;
     }
  
-    public void setID(int id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -49,11 +49,11 @@ public class User {
         this.role = role;
     }
 
-    public int getDepartmentID() {
+    public int getDepartment() {
         return departmentID;
     }
  
-    public void setDepartmentID(int departmentID) {
+    public void setDepartment(int departmentID) {
         this.departmentID = departmentID;
     }
  

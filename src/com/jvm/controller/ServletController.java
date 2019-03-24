@@ -10,26 +10,19 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import com.jvm.model.User;
 
-/**
- * ControllerServlet.java This servlet acts as a page controller for the
- * application, handling all requests from the user.
- * 
- * @author www.codejava.net
- */
 public class ServletController extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private UserDAO userDAO;
-
+    private static UserDAO userDAO;
+    
     public void init() {
         String jdbcURL = getServletContext().getInitParameter("jdbcURL");
         String jdbcUsername = getServletContext().getInitParameter("jdbcUsername");
         String jdbcPassword = getServletContext().getInitParameter("jdbcPassword");
-
+        System.out.println("ServletController init2");
         userDAO = new UserDAO(jdbcURL, jdbcUsername, jdbcPassword);
-
+        
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -40,7 +33,7 @@ public class ServletController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getServletPath();
-
+        System.out.println("doGet start "+action);
         try {
             switch (action) {
             case "/insert":
@@ -52,27 +45,56 @@ public class ServletController extends HttpServlet {
             case "/update":
                 updateUser(request, response);
                 break;
+            case "/all":
+            	listUser(request, response);
+                break;
+            case "/login":
+            	checkUser(request, response);
+                break;
             default:
                 listUser(request, response);
                 break;
             }
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             throw new ServletException(ex);
         }
     }
+    
+    private void checkUser(HttpServletRequest request, HttpServletResponse response)
+    		throws Exception {
+    	String user = request.getParameter("username");
+		String pass = request.getParameter("password");
+		request.setAttribute("user", null);
+		if (userDAO.loginAuth(user,pass)) {
+			request.setAttribute("user", user);
+			//RequestDispatcher dispatcher = request.getRequestDispatcher("/all");
+	        //dispatcher.forward(request, response);
+			response.sendRedirect(request.getContextPath() + "/all");
+		}
+		else {
+			System.out.println("Username or Password incorrect");
+			RequestDispatcher dispatcher = request.getRequestDispatcher("login.jsp");
+			dispatcher.include(request, response);
+		}
 
+			
+    }
+    
     private void listUser(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException, ServletException {
+    	System.out.println("listUser start");
         List<User> listUser = new ArrayList<>();
-        int role = Integer.parseInt(request.getParameter("ROLE"));
+        int role = 1;//Integer.parseInt(request.getParameter("ROLE"));
         try {
-            listUser = userDAO.listUsers(1, 1);
+            listUser = userDAO.listUsers(role, 1);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("listUser end "+listUser);
         request.setAttribute("listUser", listUser);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("UserList.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("index.jsp");
         dispatcher.forward(request, response);
+        //response.sendRedirect(request.getContextPath() + "/index.jsp");
     }
 
     private void insertUser(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {

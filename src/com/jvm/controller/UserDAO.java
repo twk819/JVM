@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.jvm.model.User;
+import com.mysql.jdbc.*;
 
 import java.text.SimpleDateFormat;  
 import java.util.Date;  
@@ -36,6 +37,7 @@ public class UserDAO {
             } catch (ClassNotFoundException e) {
                 throw new SQLException(e);
             }
+            System.out.println(jdbcURL);
             jdbcConnection = DriverManager.getConnection(
                                         jdbcURL, jdbcUsername, jdbcPassword);
         }
@@ -47,6 +49,18 @@ public class UserDAO {
         }
     }
 
+    public boolean loginAuth(String username, String password) throws Exception {
+    	
+    	String sql = "SELECT * FROM TB_USER WHERE USERNAME='"+username+"' AND PASSWORD='"+password+"'";
+    	System.out.println(sql);
+        connect();
+        pstmt = jdbcConnection.prepareStatement(sql);
+
+		ResultSet rs = pstmt.executeQuery();
+
+    	return rs.next();
+    }
+    
     public boolean insertUser(User user) throws Exception {
         //1000-01-01 00:00:00
         //SimpleDateFormat formatter6=new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
@@ -56,11 +70,11 @@ public class UserDAO {
         
         connect();
         pstmt = jdbcConnection.prepareStatement(sql);
-        pstmt.setInt(1, user.getID());
+        pstmt.setInt(1, user.getId());
         pstmt.setInt(2, user.getRole());
         pstmt.setString(3, user.getUsername());
         pstmt.setString(4, user.getPassword());
-        pstmt.setInt(5, user.getDepartmentID());
+        pstmt.setInt(5, user.getDepartment());
         pstmt.setString(6, user.getPhone());
         pstmt.setString(7, user.getEmail());  
          
@@ -73,31 +87,33 @@ public class UserDAO {
     public List<User> listUsers(int access, int param) throws Exception {
         List<User> list = new ArrayList<>();
          
-        String sql = "SELECT A.*, B.DEPARTMENT_NAME FROM TB_USER A JOIN TB_DEPARTMENT ON A.DEPARTMENT_ID = B.ID";
-
+        String sql = "SELECT A.*, B.NAME FROM TB_USER A JOIN TB_DEPARTMENT B ON A.DEPARTMENT_ID = B.ID";
+        
         if (access == 2)
             sql += " WHERE A.DEPARTMENT_ID = "+param;   // users in same department only
 
 
         connect();
-         
+        System.out.println("listUser sql is "+sql); 
         Statement statement = jdbcConnection.createStatement();
         ResultSet resultSet = statement.executeQuery(sql);
-         
+        String lastLogin = "";
         while (resultSet.next()) {
             int id = resultSet.getInt("ID");
             int role = resultSet.getInt("ROLE");
             String username = resultSet.getString("USERNAME");
             String password = resultSet.getString("PASSWORD");
             int departmentID = resultSet.getInt("DEPARTMENT_ID");
-            String departmentName = resultSet.getString("DEPARTMENT_NAME");
+            String departmentName = resultSet.getString("NAME");
             String phone = resultSet.getString("PHONE");
             String email = resultSet.getString("EMAIL");
             Timestamp ts = resultSet.getTimestamp("LAST_LOGIN");
-            
-            Date date = new Date();
-            date.setTime(ts.getTime());
-            String lastLogin = new SimpleDateFormat("yyyyMMdd").format(date);
+            System.out.println("ts is "+ts);
+            if (ts != null) {
+            	Date date = new Date();
+                date.setTime(ts.getTime());
+                lastLogin = new SimpleDateFormat("yyyyMMdd").format(date);
+            }
             
             System.out.println("user last login = "+lastLogin);
             User user = new User(id, username, password, role, departmentID, departmentName, phone, email, lastLogin);
@@ -119,7 +135,7 @@ public class UserDAO {
         PreparedStatement statement = jdbcConnection.prepareStatement(sql);
         statement.setString(1, user.getPhone());
         statement.setString(2, user.getEmail());
-        statement.setInt(3, user.getID());
+        statement.setInt(3, user.getId());
          
         boolean rowUpdated = statement.executeUpdate() > 0;
         statement.close();
@@ -133,7 +149,7 @@ public class UserDAO {
          
         PreparedStatement statement = jdbcConnection.prepareStatement(sql);
         statement.setString(1, user.getPhone());
-        statement.setInt(2, user.getID());
+        statement.setInt(2, user.getId());
          
         boolean rowUpdated = statement.executeUpdate() > 0;
         statement.close();
@@ -146,7 +162,7 @@ public class UserDAO {
         connect();
          
         PreparedStatement statement = jdbcConnection.prepareStatement(sql);
-        statement.setInt(1, user.getID());
+        statement.setInt(1, user.getId());
          
         boolean rowUpdated = statement.executeUpdate() > 0;
         statement.close();
