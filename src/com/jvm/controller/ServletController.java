@@ -46,6 +46,7 @@ public class ServletController extends HttpServlet {
                 updateUser(request, response);
                 break;
             case "/all":
+                checkAccess(request, response);
             	listUser(request, response);
                 break;
             case "/login":
@@ -63,12 +64,13 @@ public class ServletController extends HttpServlet {
     private void checkUser(HttpServletRequest request, HttpServletResponse response)
     		throws Exception {
     	String user = request.getParameter("username");
-		String pass = request.getParameter("password");
-		request.setAttribute("user", null);
-		if (userDAO.loginAuth(user,pass)) {
+        String pass = request.getParameter("password");
+        int id = userDAO.loginAuth(user,pass);
+        request.setAttribute("user", null);
+        request.setAttribute("id", null);
+		if (id > -1) {
 			request.setAttribute("user", user);
-			//RequestDispatcher dispatcher = request.getRequestDispatcher("/all");
-	        //dispatcher.forward(request, response);
+			request.setAttribute("id", id);
 			response.sendRedirect(request.getContextPath() + "/all");
 		}
 		else {
@@ -78,6 +80,25 @@ public class ServletController extends HttpServlet {
 		}
 
 			
+    }
+
+    private void checkAccess(HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+        String user = request.getParameter("username");
+        int id = Integer.parseInt(request.getParameter("id"));
+        int access = userDAO.userAccess(user,id);
+        
+        if (access > -1) {
+            request.setAttribute("access", access);
+        }
+        else {
+            System.out.println("Unauthorize login");
+            request.setAttribute("user", null);
+            request.setAttribute("id", null);
+            request.setAttribute("role", null);
+            RequestDispatcher dispatcher = request.getRequestDispatcher("login.jsp");
+            dispatcher.include(request, response);
+        }
     }
     
     private void listUser(HttpServletRequest request, HttpServletResponse response)
@@ -94,7 +115,6 @@ public class ServletController extends HttpServlet {
         request.setAttribute("listUser", listUser);
         RequestDispatcher dispatcher = request.getRequestDispatcher("index.jsp");
         dispatcher.forward(request, response);
-        //response.sendRedirect(request.getContextPath() + "/index.jsp");
     }
 
     private void insertUser(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {

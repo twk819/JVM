@@ -49,7 +49,7 @@ public class UserDAO {
         }
     }
 
-    public boolean loginAuth(String username, String password) throws Exception {
+    public int loginAuth(String username, String password) throws Exception {
     	
     	String sql = "SELECT * FROM TB_USER WHERE USERNAME='"+username+"' AND PASSWORD='"+password+"'";
     	System.out.println(sql);
@@ -58,7 +58,24 @@ public class UserDAO {
 
 		ResultSet rs = pstmt.executeQuery();
 
-    	return rs.next();
+    	if (rs.next())
+			return rs.getInt("ID");
+
+        return -1;
+    }
+
+    public int userAccess(String username, int id) throws Exception {
+        String sql = "SELECT ROLE FROM TB_USER WHERE USERNAME='"+id+"' AND ID='"+id+"'";
+    	System.out.println(sql);
+        connect();
+        pstmt = jdbcConnection.prepareStatement(sql);
+
+		ResultSet rs = pstmt.executeQuery();
+
+    	if (rs.next())
+			return rs.getInt("ROLE");
+
+        return -1;
     }
     
     public boolean insertUser(User user) throws Exception {
