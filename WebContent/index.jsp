@@ -30,6 +30,23 @@
                 </tr>
             </c:forEach>
         </table>
-    </div>   
+    </div>
+    <script>
+    var users = [
+    	<c:forEach var="user" items="${listUser}">
+    	    {
+    	    	id: '${user.id}',
+    	    	username: '${user.username}',
+    	    	password: '${user.password}',
+    	    	role: '${user.role}',
+    	    	department: '${user.department}',
+    	    	phone: '${user.phone}',
+    	    	email: '${user.email}'
+    	    }  
+   	    </c:forEach>  
+    	]; 
+    
+    alert(users);
+    </script>  
 </body>
 </html>

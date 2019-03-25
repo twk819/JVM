@@ -3,10 +3,9 @@ package com.jvm.model;
 public class User {
     protected int id;
     protected int role; // 1 - Admin, 2 = Manager, 3 - User
-    protected int departmentID;
     protected String username;
     protected String password;
-    protected String departmentName;
+    protected String department;
     protected String phone;
     protected String email;
     protected String lastLogin;
@@ -21,13 +20,12 @@ public class User {
         this.email = email;
     }
      
-    public User(int id, String username, String password, int role, int departmentID, String departmentName,String phone, String email, String lastLogin) {
+    public User(int id, String username, String password, int role, String department,String phone, String email, String lastLogin) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.role = role;
-        this.departmentID = departmentID;
-        this.departmentName = departmentName;
+        this.department= department;
         this.phone = phone;
         this.email = email;
         this.lastLogin = lastLogin;
@@ -49,14 +47,6 @@ public class User {
         this.role = role;
     }
 
-    public int getDepartment() {
-        return departmentID;
-    }
- 
-    public void setDepartment(int departmentID) {
-        this.departmentID = departmentID;
-    }
- 
     public String getEmail() {
         return email;
     }
@@ -87,5 +77,9 @@ public class User {
 
 	public String getPassword() {
 		return password;
+	}
+
+	public String getDepartment() {
+		return department;
 	}
 }

@@ -85,7 +85,7 @@ public class ServletController extends HttpServlet {
     private void checkAccess(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         String user = request.getParameter("username");
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = 1;//Integer.parseInt(request.getParameter("id"));
         int access = userDAO.userAccess(user,id);
         
         if (access > -1) {
@@ -113,31 +113,26 @@ public class ServletController extends HttpServlet {
         }
         System.out.println("listUser end "+listUser);
         request.setAttribute("listUser", listUser);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("index.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("index2.jsp");
         dispatcher.forward(request, response);
     }
 
     private void insertUser(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
-        String title = request.getParameter("title");
-        String author = request.getParameter("author");
-        float price = Float.parseFloat(request.getParameter("price"));
 
-        int id = Integer.parseInt(request.getParameter("ID"));
         int role = Integer.parseInt(request.getParameter("ROLE"));
         String username = request.getParameter("USERNAME");
         String password = request.getParameter("PASSWORD");
-        int departmentID = Integer.parseInt(request.getParameter("DEPARTMENT_ID"));
-        String departmentName = request.getParameter("DEPARTMENT_NAME");
+        String department= request.getParameter("DEPARTMENT");
         String phone = request.getParameter("PHONE");
         String email = request.getParameter("EMAIL");
 
-        User newUser = new User(id, username, password, role, departmentID, departmentName, phone, email, "");
+        User newUser = new User(0, username, password, role, department, phone, email, "");
         try {
             userDAO.insertUser(newUser);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        response.sendRedirect("list");
+        response.sendRedirect("all");
     }
 
     private void updateUser(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
@@ -151,7 +146,7 @@ public class ServletController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        response.sendRedirect("list");
+        response.sendRedirect("all");
     }
 
     private void deleteUser(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
@@ -163,7 +158,7 @@ public class ServletController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        response.sendRedirect("list");
+        response.sendRedirect("all");
  
     }
 }

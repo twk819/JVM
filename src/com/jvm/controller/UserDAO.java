@@ -83,17 +83,16 @@ public class UserDAO {
         //SimpleDateFormat formatter6=new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
         //Date date6=formatter6.parse(user.getlastLogin());
 
-        String sql = "INSERT INTO TB_USER (ID, USERNAME, PASSWORD, ROLE, DEPARTMENT_ID, PHONE, EMAIL) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        
+        String sql = "INSERT INTO TB_USER (USERNAME, PASSWORD, ROLE, DEPARTMENT, PHONE, EMAIL) VALUES (?, ?, ?, ?, ?, ?)";
         connect();
+        System.out.println("getrole = "+user.getRole());
         pstmt = jdbcConnection.prepareStatement(sql);
-        pstmt.setInt(1, user.getId());
-        pstmt.setInt(2, user.getRole());
-        pstmt.setString(3, user.getUsername());
-        pstmt.setString(4, user.getPassword());
-        pstmt.setInt(5, user.getDepartment());
-        pstmt.setString(6, user.getPhone());
-        pstmt.setString(7, user.getEmail());  
+        pstmt.setString(1, user.getUsername());
+        pstmt.setString(2, user.getPassword());
+        pstmt.setInt(3, user.getRole());
+        pstmt.setString(4, user.getDepartment());
+        pstmt.setString(5, user.getPhone());
+        pstmt.setString(6, user.getEmail());  
          
         boolean rowInserted = pstmt.executeUpdate() > 0;
         pstmt.close();
@@ -104,10 +103,9 @@ public class UserDAO {
     public List<User> listUsers(int access, int param) throws Exception {
         List<User> list = new ArrayList<>();
          
-        String sql = "SELECT A.*, B.NAME FROM TB_USER A JOIN TB_DEPARTMENT B ON A.DEPARTMENT_ID = B.ID";
-        
+        String sql = "SELECT * FROM TB_USER ";
         if (access == 2)
-            sql += " WHERE A.DEPARTMENT_ID = "+param;   // users in same department only
+            sql += "WHERE DEPARTMENT = "+param;   // users in same department only
 
 
         connect();
@@ -120,8 +118,7 @@ public class UserDAO {
             int role = resultSet.getInt("ROLE");
             String username = resultSet.getString("USERNAME");
             String password = resultSet.getString("PASSWORD");
-            int departmentID = resultSet.getInt("DEPARTMENT_ID");
-            String departmentName = resultSet.getString("NAME");
+            String department = resultSet.getString("DEPARTMENT");
             String phone = resultSet.getString("PHONE");
             String email = resultSet.getString("EMAIL");
             Timestamp ts = resultSet.getTimestamp("LAST_LOGIN");
@@ -133,7 +130,7 @@ public class UserDAO {
             }
             
             System.out.println("user last login = "+lastLogin);
-            User user = new User(id, username, password, role, departmentID, departmentName, phone, email, lastLogin);
+            User user = new User(id, username, password, role, department, phone, email, lastLogin);
             list.add(user);
         }
          
