@@ -3,10 +3,10 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page import="com.jvm.model.User" %>
 <% 
-    User loginUser = (User) request.getAttribute("loginUser");
+    User loginUser = (User) session.getAttribute("loginUser");
 
-    String myId = loginUser.getId();
-    String myRole = loginUser.getRole();
+    int myId = loginUser.getId();
+    int myRole = loginUser.getRole();
     String myDepartment = loginUser.getDepartment();
 %>
 <!-- https://www.codejava.net/coding/jsp-servlet-jdbc-mysql-create-read-update-delete-crud-example -->
@@ -30,17 +30,18 @@
 
     <insert-component />
     
+    <edit-component />
 
 <script src="https://unpkg.com/vue@2.6.10/dist/vue.js"></script>
 <script src="https://unpkg.com/vuetify@1.5.7/dist/vuetify.js"></script>
 <script src="https://unpkg.com/vue-router@3.0.2/dist/vue-router.js"></script>
 <script>
-    Vue.prototype.$myid = +<%= myId %>;
-    Vue.prototype.$myrole = +<%= myRole %>;
+    Vue.prototype.$myid = <%= myId %>;
+    Vue.prototype.$myrole = <%= myRole %>;
     Vue.prototype.$mydept = '<%= myDepartment %>';
 
 	let users = [
-		<c:forEach var="user" items="${listUser}">
+		<c:forEach var="user" items="${listUser}" varStatus="status">
 		    {
 		    	id: '${user.id}',
 		    	username: '${user.username}',
@@ -49,7 +50,9 @@
 		    	phone: '${user.phone}',
 		    	email: '${user.email}'
 		    } 
-	    </c:forEach>  
+		    <c:if test="${!status.last}">,</c:if>
+	    </c:forEach>
+	    
 	];
 
 	// Vue components
@@ -57,27 +60,26 @@
         data: function() {
             return {
                 headers: [
-                    { text: 'Id', align: 'left', width: "1%" },
-                    { text: 'Username', width: "1%" },
-                    { text: 'Role', width: "1%" },
-                    { text: 'Department', width: "1%" },
-                    { text: 'Mobile no.', width: "1%" },
-                    { text: 'Email', width: "1%" },
-                    { text: 'Action', width: "1%"}
+                    { text: 'Id', align: 'left', width: "1%", value: "id" },
+                    { text: 'Username', width: "1%", value: "username"},
+                    { text: 'Role', width: "1%", value: "role"},
+                    { text: 'Department', width: "1%", value: "department" },
+                    { text: 'Mobile no.', width: "1%", value: "phone" },
+                    { text: 'Email', width: "1%", value: "email" },
+                    { text: 'Action', width: "1%", sortable: false }
                 ],
                 items: users
             }
         },
         methods: {
             editItem (item) {
-                router.push({ name: 'edit-user', params: { obj: item } })
+                this.$router.push({ name: 'edit-user', params: { obj: item } })
             },
-
-            async deleteItem (item) {
+            deleteItem (item) {
                 if (confirm('Are you sure you want to delete this item?')) {
                     document.mainform.action = "delete";
 					document.mainform.id.value = item.id;
-                    wait document.mainform.submit();
+                    document.mainform.submit();
                   	//const index = this.items.indexOf(item);
                     //this.items.splice(index, 1);
                 }
@@ -91,7 +93,7 @@
                         <template>
                             <v-app>
                                 <v-card class="pa-3">
-                                <router-link :to="{path: '/add-user'}">
+                                <router-link :to="{path: '/add-user'}" v-if="this.$myrole == 1">
                                     <v-btn color="warning" dark>
                                         Add User
                                     </v-btn>
@@ -120,8 +122,8 @@
                                     <td class="text-xs-left">{{ props.item.phone }}</td>
                                     <td class="text-xs-left">{{ props.item.email }}</td>
                                     <td class="justify-center layout px-0">
-                                        <v-icon small class="mr-2" @click="editItem(props.item)">edit</v-icon>
-                                        <v-icon v-if="role < 2" small @click="deleteItem(props.item)">delete</v-icon>
+                                    	<v-icon small class="mr-2" @click="editItem(props.item)">edit</v-icon>
+                                        <v-icon v-if="this.$myrole == 0 " small @click="deleteItem(props.item)">delete</v-icon>
                                     </td>
                                     </template>
                                     <v-alert v-slot:no-results :value="true" color="error" icon="warning">
@@ -156,6 +158,11 @@
 	               	{ value: 2, role: 'Manager' },
 	                { value: 3, role: 'User' }
 	            ],
+	            departments: [
+                	{ value: 'IT' },
+	               	{ value: 'Human Resource' },
+	                { value: 'Marketing' }
+	            ],
                 rules: {
                     required: value => !!value || 'Required.',
                     min: v => v.length >= 4 || 'Min 4 characters',
@@ -168,15 +175,12 @@
         },
         methods: {
             addUser: function() {
-				//router.push('/');
-				//document.insertForm.ROLE.value = this.user.role.value;
-                alert(document.insertForm.ROLE.value);
 				document.insertForm.submit();
 				
             }
         },
         template: `
-        <template id="add-user" v-if="this.$myrole == 1">
+        <template id="add-user">
             <v-app id="inspire">
                 <form name="insertForm" action="insert">
                     <v-text-field
@@ -202,12 +206,23 @@
                         :items="roles"
                         :rules="[rules.required]"
                        	item-text="role"
-                        NAME="ROLE2"
+                        NAME="SELECT_ROLE"
                         label="User role"
                         single-line
                         return-object
                     ></v-select>
 
+                    <v-select
+                    v-model="user.department"
+                    :items="departments"
+                    :rules="[rules.required]"
+                   	item-text="value"
+                    NAME="SELECT_DEPT"
+                    label="Department"
+                    single-line
+                    return-object
+                ></v-select>
+                
                     <v-text-field
                         v-model="user.phone"
                         NAME="PHONE"
@@ -222,6 +237,7 @@
                     ></v-text-field>
                 	
                     <input type="hidden" name="ROLE" :value="this.user.role.value" />
+                    	<input type="hidden" name="DEPARTMENT" :value="this.user.department.value" />
                     <v-btn type="button" color="success" @click="addUser">Create User</v-btn>
                 
                     <router-link :to="{path: '/'}">
@@ -293,9 +309,13 @@
 
     let router = new VueRouter({
         routes: [
-            {path: '/', component: TableComponent},
-            {path: '/add-user', component: InsertComponent},
-            {path: '/edit-user', component: EditComponent},
+            { path: '/', component: TableComponent },
+            { path: '/add-user', component: InsertComponent },
+            { 
+            	path: '/edit-user',
+            	name: 'edit-user',
+            	component: EditComponent
+             }
         ]
     });
 

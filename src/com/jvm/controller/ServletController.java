@@ -10,6 +10,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import com.jvm.model.User;
 
 public class ServletController extends HttpServlet {
@@ -65,10 +67,11 @@ public class ServletController extends HttpServlet {
     	String loginId = request.getParameter("username");
         String loginPw = request.getParameter("password");
         User user = userDAO.loginAuth(loginId,loginPw);
-        request.setAttribute("loginUser", null);
+        
 		if (user != null) {
-            request.setAttribute("loginUser", user);
-            request.setAttribute("user_status", null);
+			HttpSession session = request.getSession(true);
+			session.setAttribute("loginUser", user);
+			session.setAttribute("user_status", null);
 			response.sendRedirect(request.getContextPath() + "/all");
 		}
 		else {
@@ -81,23 +84,11 @@ public class ServletController extends HttpServlet {
     }
 
     private void checkAccess(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        // String user = request.getParameter("username");
-        // int id = Integer.parseInt(request.getParameter("id"));
-        // int access = userDAO.userAccess(user,id);
-        
-        // if (access > -1) {
-        //     request.setAttribute("access", access);
-        // }
-        // else {
-        //     System.out.println("Unauthorize login");
-        //     request.setAttribute("user", null);
-        //     request.setAttribute("id", null);
-        //     request.setAttribute("role", null);
-        //     RequestDispatcher dispatcher = request.getRequestDispatcher("login.jsp");
-        //     dispatcher.include(request, response);
-        // }
-        User loginUser = (User) request.getAttribute("loginUser");
+    	HttpSession session = request.getSession(true);
+        User loginUser = (User) session.getAttribute("loginUser");
+        System.out.println("checkAccess : "+loginUser);
         if (loginUser == null) {
+        	System.out.println("Unauthorize login");
             request.setAttribute("user_status", "Unauthorize login");
             logOut(request,response);
         }
@@ -109,17 +100,17 @@ public class ServletController extends HttpServlet {
     }
     
     private void listUser(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        System.out.println("listUser start");
-        User loginUser = (User) request.getAttribute("loginUser");
+    	HttpSession session = request.getSession(true);
+        User loginUser = (User) session.getAttribute("loginUser");
         List<User> listUser = new ArrayList<>();
-
+        
         try {
             listUser = userDAO.listUsers(loginUser);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("listUser end "+listUser);
-        request.setAttribute("listUser", listUser);
+        
+        request.setAttribute("listUser", listUser);	// set list to display on /all
         RequestDispatcher dispatcher = request.getRequestDispatcher("index2.jsp");
         dispatcher.forward(request, response);
     }

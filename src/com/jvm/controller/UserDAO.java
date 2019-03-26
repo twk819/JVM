@@ -82,18 +82,27 @@ public class UserDAO {
     
     public void insertLog(String action, int userid, String query) throws Exception {
         
-        Timestamp now = new Timestamp(new Date().getTime());
-        System.out.println("INSERT LOG @ "+now);
-
+        Timestamp ts = new Timestamp(new Date().getTime());
+        System.out.println("insertLog ts = "+ts);
+        Timestamp now = Timestamp.valueOf(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(ts));	// used to remove ms
+        System.out.println("insertLog now = "+now);
+        
+        java.util.Date dt = new java.util.Date();
+        java.text.SimpleDateFormat sdf = 
+             new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String currentTime = sdf.format(dt);
+        System.out.println("insertLog currentTime = "+currentTime);
+        
         String sql = "INSERT INTO TB_LOG (TYPE, USERID, TIMESTAMP, SQL) VALUES (?, ?, ?, ?)";
         connect();
         pstmt = jdbcConnection.prepareStatement(sql);
         pstmt.setString(1, action);
         pstmt.setInt(2, userid);
-        pstmt.setTimestamp(3, now);
+        pstmt.setString(3, currentTime);
         pstmt.setString(4, query);
 
-        boolean rowInserted = pstmt.executeUpdate() > 0;
+        System.out.println("insertLog sql = "+sql);
+        pstmt.executeUpdate();
         pstmt.close();
         disconnect();
     }
@@ -114,8 +123,8 @@ public class UserDAO {
         pstmt.setString(5, user.getPhone());
         pstmt.setString(6, user.getEmail());  
         
+        System.out.println("insertUser sql = "+sql);
         insertLog("insertUser",user.getId(),sql);
-
         boolean rowInserted = pstmt.executeUpdate() > 0;
         pstmt.close();
         disconnect();
@@ -124,10 +133,10 @@ public class UserDAO {
 
     public List<User> listUsers(User user) throws Exception {
         List<User> list = new ArrayList<>();
-        
+        System.out.println("list user is "+user); 
         String sql = "SELECT * FROM TB_USER ";
         if (user.getRole() == 2)
-            sql += "WHERE DEPARTMENT = "+ user.getDepartment();   // users in same department only
+            sql += "WHERE ROLE = 2 AND DEPARTMENT = "+ user.getDepartment();   // users in same department only
         else if (user.getRole() == 3)
             sql += "WHERE ID = "+ user.getId();  // user itself only
 
