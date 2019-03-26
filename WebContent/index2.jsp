@@ -1,6 +1,14 @@
 <%@ page language="java" import="java.util.*" contentType="text/html; charset=ISO-8859-1"
     pageEncoding="ISO-8859-1"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page import="com.jvm.model.User" %>
+<% 
+    User loginUser = (User) request.getAttribute("loginUser");
+
+    String myId = loginUser.getId();
+    String myRole = loginUser.getRole();
+    String myDepartment = loginUser.getDepartment();
+%>
 <!-- https://www.codejava.net/coding/jsp-servlet-jdbc-mysql-create-read-update-delete-crud-example -->
 <!DOCTYPE html>
 <html>
@@ -27,13 +35,15 @@
 <script src="https://unpkg.com/vuetify@1.5.7/dist/vuetify.js"></script>
 <script src="https://unpkg.com/vue-router@3.0.2/dist/vue-router.js"></script>
 <script>
+    Vue.prototype.$myid = +<%= myId %>;
+    Vue.prototype.$myrole = +<%= myRole %>;
+    Vue.prototype.$mydept = '<%= myDepartment %>';
 
 	let users = [
 		<c:forEach var="user" items="${listUser}">
 		    {
 		    	id: '${user.id}',
 		    	username: '${user.username}',
-		    	password: '${user.password}',
 		    	role: '${user.role}',
 		    	department: '${user.department}',
 		    	phone: '${user.phone}',
@@ -49,29 +59,25 @@
                 headers: [
                     { text: 'Id', align: 'left', width: "1%" },
                     { text: 'Username', width: "1%" },
-                    { text: 'Password', width: "1%" },
                     { text: 'Role', width: "1%" },
                     { text: 'Department', width: "1%" },
                     { text: 'Mobile no.', width: "1%" },
                     { text: 'Email', width: "1%" },
                     { text: 'Action', width: "1%"}
                 ],
-                items: users,
-                role: 1
+                items: users
             }
         },
         methods: {
             editItem (item) {
-                this.editedIndex = this.items.indexOf(item)
-                this.editedItem = Object.assign({}, item)
-                this.dialog = true
+                router.push({ name: 'edit-user', params: { obj: item } })
             },
 
             async deleteItem (item) {
                 if (confirm('Are you sure you want to delete this item?')) {
                     document.mainform.action = "delete";
 					document.mainform.id.value = item.id;
-                    document.mainform.submit();
+                    wait document.mainform.submit();
                   	//const index = this.items.indexOf(item);
                     //this.items.splice(index, 1);
                 }
@@ -83,7 +89,7 @@
                 <v-content>
                     <v-container>
                         <template>
-                            <v-app id="inspire">
+                            <v-app>
                                 <v-card class="pa-3">
                                 <router-link :to="{path: '/add-user'}">
                                     <v-btn color="warning" dark>
@@ -99,7 +105,6 @@
                                     <template v-slot:items="props">
                                     <td>{{ props.item.id }}</td>
                                     <td class="text-xs-left">{{ props.item.username }}</td>
-                                    <td class="text-xs-left">{{ props.item.password }}</td>
                                     <td class="text-xs-left">
                                     	<span v-if="props.item.role == 1">
                                     		Admin
@@ -139,10 +144,8 @@
     let InsertComponent = Vue.component('InsertComponent', {
          data: function () {
             return {
-                show: false,
                 user: {
                     username: '',
-                    password: '',
                     role: '',
                     department: '',
                     phone: '',
@@ -165,20 +168,15 @@
         },
         methods: {
             addUser: function() {
-				let user = this.user; //let user = this.$get('user');
-				/* user.push({
-				    name: user.username,
-				    password: user.password,
-				    role: user.role
-				}); */
 				//router.push('/');
-				document.insertForm.ROLE.value = this.user.role.value;
+				//document.insertForm.ROLE.value = this.user.role.value;
+                alert(document.insertForm.ROLE.value);
 				document.insertForm.submit();
 				
             }
         },
         template: `
-        <template id="add-user">
+        <template id="add-user" v-if="this.$myrole == 1">
             <v-app id="inspire">
                 <form name="insertForm" action="insert">
                     <v-text-field
@@ -195,7 +193,7 @@
                         :type="show ? 'text' : 'password'"
                         name="PASSWORD"
                         label="Password"
-                        hint="At least 6 characters"
+                        hint="At least 4 characters required"
                         @click:append="show = !show"
                     ></v-text-field>
 
@@ -223,8 +221,66 @@
                         label="E-mail"
                     ></v-text-field>
                 	
-                    <input type="hidden" name="ROLE" value="" />
+                    <input type="hidden" name="ROLE" :value="this.user.role.value" />
                     <v-btn type="button" color="success" @click="addUser">Create User</v-btn>
+                
+                    <router-link :to="{path: '/'}">
+                        <v-btn color="warning">Cancel</v-btn>
+                    </router-link>
+                </form>
+            </v-app>
+        </template>
+        `
+    });
+
+    let EditComponent = Vue.component('EditComponent', {
+         data: function () {
+            return {
+                show: false,
+                user: this.$route.params.obj,
+                rules: {
+                    email: value => {
+                        const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+                        return pattern.test(value) || 'Invalid email.'
+                    }
+                }
+            }
+        },
+        methods: {
+            updateUser: function() {
+				
+            }
+        },
+        template: `
+        <template id="edit-user">
+            <v-app>
+                <form name="editForm" action="update">
+                    <input type="hidden" name="USERID" :value="this.$myid" />
+                    <input type="hidden" name="USERROLE" :value="this.$myrole" />
+                    <input type="hidden" name="ID" :value="user.id" />
+                    <v-text-field
+                        v-model="user.username"
+                        :rules="[rules.required, rules.min]"
+                        name="USERNAME"
+                        label="Name"
+                        readonly
+                    ></v-text-field>
+
+                    <v-text-field
+                        v-model="user.phone"
+                        NAME="PHONE"
+                        label="Mobile no."
+                    ></v-text-field>
+
+                    <v-text-field
+                        v-model="user.email"
+                        :rules="[rules.email]"
+                        NAME="EMAIL"
+                        label="E-mail"
+                        v-if="this.$myrole == 1"
+                    ></v-text-field>
+                    
+                    <v-btn type="submit" color="success">Save Changes</v-btn>
                 
                     <router-link :to="{path: '/'}">
                         <v-btn color="warning">Cancel</v-btn>
@@ -239,6 +295,7 @@
         routes: [
             {path: '/', component: TableComponent},
             {path: '/add-user', component: InsertComponent},
+            {path: '/edit-user', component: EditComponent},
         ]
     });
 
