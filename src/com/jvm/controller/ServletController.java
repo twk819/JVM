@@ -1,7 +1,6 @@
 package com.jvm.controller;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +21,6 @@ public class ServletController extends HttpServlet {
         String jdbcURL = getServletContext().getInitParameter("jdbcURL");
         String jdbcUsername = getServletContext().getInitParameter("jdbcUsername");
         String jdbcPassword = getServletContext().getInitParameter("jdbcPassword");
-        System.out.println("ServletController init2");
         userDAO = new UserDAO(jdbcURL, jdbcUsername, jdbcPassword);
         
     }
@@ -37,12 +35,15 @@ public class ServletController extends HttpServlet {
         try {
             switch (action) {
             case "/insert":
+            	checkAccess(request, response);
                 insertUser(request, response);
                 break;
             case "/delete":
+            	checkAccess(request, response);
                 deleteUser(request, response);
                 break;
             case "/update":
+            	checkAccess(request, response);
                 updateUser(request, response);
                 break;
             case "/all":
@@ -53,9 +54,10 @@ public class ServletController extends HttpServlet {
             	checkUser(request, response);
                 break;
             case "/logout":
-                logOut(request, response);
+            	logOut(request, response);
+            	break;
             default:
-                listUser(request, response);
+            	checkUser(request, response);
                 break;
             }
         } catch (Exception ex) {
@@ -69,15 +71,18 @@ public class ServletController extends HttpServlet {
         User user = userDAO.loginAuth(loginId,loginPw);
         
 		if (user != null) {
+			userDAO.updateLogin(user);
 			HttpSession session = request.getSession(true);
 			session.setAttribute("loginUser", user);
 			session.setAttribute("user_status", null);
 			response.sendRedirect(request.getContextPath() + "/all");
+			return;
 		}
 		else {
-			System.out.println("Username or Password incorrect");
+			request.setAttribute("user_status", "Username or Password incorrect");
 			RequestDispatcher dispatcher = request.getRequestDispatcher("login.jsp");
-			dispatcher.include(request, response);
+	        dispatcher.forward(request, response);
+			return;
 		}
 
 			
@@ -86,17 +91,18 @@ public class ServletController extends HttpServlet {
     private void checkAccess(HttpServletRequest request, HttpServletResponse response) throws Exception {
     	HttpSession session = request.getSession(true);
         User loginUser = (User) session.getAttribute("loginUser");
-        System.out.println("checkAccess : "+loginUser);
         if (loginUser == null) {
-        	System.out.println("Unauthorize login");
             request.setAttribute("user_status", "Unauthorize login");
-            logOut(request,response);
+            response.sendRedirect("/login");
+            return;
         }
     }
 
     private void logOut(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        request.getSession().invalidate();
-        response.sendRedirect("login");
+    	request.setAttribute("user_status", "You have been log out.");
+		RequestDispatcher dispatcher = request.getRequestDispatcher("login.jsp");
+        dispatcher.forward(request, response);
+		return;
     }
     
     private void listUser(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -111,8 +117,9 @@ public class ServletController extends HttpServlet {
         }
         
         request.setAttribute("listUser", listUser);	// set list to display on /all
-        RequestDispatcher dispatcher = request.getRequestDispatcher("index2.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("index.jsp");
         dispatcher.forward(request, response);
+        return;
     }
 
     private void insertUser(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -131,6 +138,7 @@ public class ServletController extends HttpServlet {
             e.printStackTrace();
         }
         response.sendRedirect("all");
+        return;
     }
 
     private void updateUser(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -148,6 +156,7 @@ public class ServletController extends HttpServlet {
             e.printStackTrace();
         }
         response.sendRedirect("all");
+        return;
     }
 
     private void deleteUser(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -160,6 +169,6 @@ public class ServletController extends HttpServlet {
             e.printStackTrace();
         }
         response.sendRedirect("all");
- 
+        return;
     }
 }
