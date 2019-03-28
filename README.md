@@ -14,16 +14,15 @@ This application is built according to requirements below:
 
 
 ## Tool used
-Java Servlet
-MySQL 
-Vue.js
-Apache Tomcat 9
+*Java Servlet
+*MySQL 
+*Vue.js
+*Apache Tomcat 9
 
 ### Installing
 Download and import the project into any IDE that supports J2EE.
 
-
-##MySQL (I was not able to export the database so I only included the CREATE TABLE sql for now)
+##Database (I was not able to export the database so I only included the CREATE TABLE sql for now)
 
 Servlet connection settings to MySQL in web.xml
 ```
