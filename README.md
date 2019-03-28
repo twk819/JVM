@@ -48,7 +48,7 @@ createtable.sql
 ```
 
 ## Deployment
-To access to the site, use the following exmaple URL, chaning the port number accordingly
+To access to the site, use the following exmaple URL, changing the port number accordingly
 ```
 localhost:8080/JVM
 ```
