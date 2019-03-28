@@ -4,20 +4,12 @@ This is a CRUD application build for assignment and education purpose.
 This application is built according to requirements below:
 
 1.            Web Application with back-end in Java + frontend in any Javascript framework
-
 2.            Database back-end
-
 3.            3 main kinds of user types: User, Manager, Admin
-
 4.            Admin can View All Users, Add, Modify, Delete Users. Admin should be able to modify 2 attributes of an user in 1 transaction, e.g. change user's phone and email in 1 transaction
-
 5.            Manager can view users under their departments only. And modify their mobile number only. No add or delete.  
-
-
 6.            User can update their mobile number only
-
 7.            All users are able to login to the web app and see their relevant pages.
-
 8.            All actions of the users should be logged for auditing purposes.
 
 
