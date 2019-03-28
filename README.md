@@ -61,4 +61,10 @@ The landing page can be changed at the following lines in web.xml
 </welcome-file-list>
   ```
 
+In createtable.sql, I have included an admin user for testing purpose
+```
+Username: admin
+Password: admin
+```
+
 
